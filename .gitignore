@@ -1,8 +1,10 @@
 ### Project files ###
+.env
 *.jar
 target/
 !**/src/main/**/target/
 !**/src/test/**/target/
+matchjob/.gradle/
 
 ### STS ###
 .apt_generated

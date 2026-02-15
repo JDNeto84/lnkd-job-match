@@ -1,3 +1,37 @@
 spring:
   application:
     name: matchjob
+
+  datasource:
+    url: ${SPRING_DATASOURCE}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: ${HIBERNATE_CONNECTION_AUTOCOMMIT}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+    show-sql: ${SPRING_JPA_SHOW_SQL}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          fetch_size: ${HIBERNATE_JDBC_FETCH_SIZE}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: ${LOG_LEVEL}
+    org.hibernate.SQL: ${LOG_SQL}
+    org.hibernate.type.descriptor.sql: trace
+    com.zaxxer.hikari: WARN
