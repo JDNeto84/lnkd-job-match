@@ -1,58 +1,94 @@
 package com.matchjob.application.rest.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matchjob.infrastructure.security.JwtService;
+import com.matchjob.application.rest.dto.auth.LoginRequest;
+import com.matchjob.application.rest.dto.auth.LoginResponse;
+import com.matchjob.application.rest.dto.auth.MeResponse;
+import com.matchjob.application.rest.dto.auth.RegisterRequest;
+import com.matchjob.core.domain.entity.User;
+import com.matchjob.core.ports.incoming.user.AuthenticateUserUseCase;
+import com.matchjob.core.ports.incoming.user.GetCurrentUserUseCase;
+import com.matchjob.core.ports.incoming.user.RegisterUserUseCase;
+import com.matchjob.core.usecases.user.dto.AuthenticateUserCommand;
+import com.matchjob.core.usecases.user.dto.GetCurrentUserQuery;
+import com.matchjob.core.usecases.user.dto.RegisterUserCommand;
 
-import java.util.List;
-import java.util.stream.Collectors;
+ 
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private record LoginRequest(@NotBlank String username, @NotBlank String password) {}
-    private record LoginResponse(String token) {}
-    private record ErrorResponse(String error, String message) {}
+    private final AuthenticateUserUseCase authenticateUser;
+    private final RegisterUserUseCase registerUser;
+    private final GetCurrentUserUseCase getCurrentUser;
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
+    public AuthController(AuthenticateUserUseCase authenticateUser,
+                          RegisterUserUseCase registerUser,
+                          GetCurrentUserUseCase getCurrentUser) {
+        this.authenticateUser = authenticateUser;
+        this.registerUser = registerUser;
+        this.getCurrentUser = getCurrentUser;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.username(), request.password())
-            );
-        } catch (AuthenticationException ex) {
-            return ResponseEntity.status(401)
-                    .body(new ErrorResponse("unauthorized", "Credenciais inválidas"));
+        var result = authenticateUser.execute(new AuthenticateUserCommand(request.email(), request.password()));
+        return ResponseEntity.ok(new LoginResponse(result.token(), result.tokenType(), result.expiresInSeconds()));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        User saved = registerUser.execute(new RegisterUserCommand(request.name(), request.email(), request.password()));
+
+        MeResponse response = new MeResponse(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail(),
+                "ROLE_" + saved.getRole().name(),
+                saved.getPlan().name()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/me")
+    public ResponseEntity<?> me(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
         }
 
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-        List<String> roles = principal.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+        String email = principal.getUsername();
 
-        String token = jwtService.generateToken(principal.getUsername(), roles);
-        return ResponseEntity.ok(new LoginResponse(token));
+        var userOpt = getCurrentUser.execute(new GetCurrentUserQuery(email));
+
+        if (userOpt.isEmpty()) {
+            String role = principal.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse(null);
+            MeResponse response = new MeResponse(null, null, email, role, null);
+            return ResponseEntity.ok(response);
+        }
+
+        User user = userOpt.get();
+        String role = "ROLE_" + user.getRole().name();
+        MeResponse response = new MeResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                role,
+                user.getPlan().name()
+        );
+        return ResponseEntity.ok(response);
     }
 }

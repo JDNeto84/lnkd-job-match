@@ -10,11 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -62,29 +57,6 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
             
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    // TO DO: used in tests, remove after implementation in user entity
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        var admin = User.withUsername("admin")
-                .password(encoder.encode("admin"))
-                .roles("ADMIN")
-                .build();
-        var recruiter = User.withUsername("recruiter")
-                .password(encoder.encode("recruiter"))
-                .roles("RECRUITER")
-                .build();
-        var user = User.withUsername("user")
-                .password(encoder.encode("user"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(admin, recruiter, user);
     }
 
     @Bean

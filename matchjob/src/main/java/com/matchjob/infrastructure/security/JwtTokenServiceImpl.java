@@ -8,6 +8,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.matchjob.core.ports.outgoing.TokenService;
+
 import javax.crypto.SecretKey;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
@@ -16,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class JwtService {
+public class JwtTokenServiceImpl implements TokenService {
 
     @Value("${jwt.secret}")
     private String secret;
@@ -24,15 +26,19 @@ public class JwtService {
     @Value("${jwt.expiration-minutes}")
     private long expirationMinutes;
 
+    public long getExpirationMinutes() {
+        return expirationMinutes;
+    }
+
     private SecretKey getSigningKey() {
         byte[] keyBytes;
         try {
             keyBytes = Decoders.BASE64.decode(secret);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("JWT secret must be Base64-encoded");
+            throw new IllegalStateException("Segredo JWT deve estar codificado em Base64");
         }
         if (keyBytes.length < 32) {
-            throw new IllegalStateException("JWT secret must be at least 256-bit (32 bytes) Base64");
+            throw new IllegalStateException("Segredo JWT deve ter pelo menos 256 bits (32 bytes) em Base64");
         }
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -42,10 +48,11 @@ public class JwtService {
         getSigningKey();
     }
 
-    public String generateToken(String username, List<String> roles) {
+    @Override
+    public String generateToken(String subject, List<String> roles) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(subject)
                 .claim("roles", roles)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)))
@@ -53,15 +60,18 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, String username) {
-        String tokenUsername = getUsername(token);
-        return tokenUsername.equals(username) && !isTokenExpired(token);
+    @Override
+    public boolean isTokenValid(String token, String subject) {
+        String tokenSubject = getSubject(token);
+        return tokenSubject.equals(subject) && !isTokenExpired(token);
     }
 
-    public String getUsername(String token) {
+    @Override
+    public String getSubject(String token) {
         return getAllClaims(token).getSubject();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         Claims claims = getAllClaims(token);

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.matchjob.infrastructure.security.JwtService;
+import com.matchjob.core.ports.outgoing.TokenService;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
+    public JwtAuthenticationFilter(TokenService tokenService, UserDetailsService userDetailsService) {
+        this.tokenService = tokenService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             String username = null;
             try {
-                username = jwtService.getUsername(token);
+                username = tokenService.getSubject(token);
             } catch (Exception e) {
                 username = null;
             }
@@ -49,8 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                if (jwtService.isTokenValid(token, userDetails.getUsername())) {
-                    List<SimpleGrantedAuthority> authorities = jwtService.getRoles(token)
+                if (tokenService.isTokenValid(token, userDetails.getUsername())) {
+                    List<SimpleGrantedAuthority> authorities = tokenService.getRoles(token)
                             .stream()
                             .map(SimpleGrantedAuthority::new)
                             .collect(Collectors.toList());
