@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Test;
 
-import com.matchjob.core.domain.exception.InvalidKeywordException;
+import com.matchjob.domain.exception.InvalidKeywordException;
+import com.matchjob.domain.valueobject.Keyword;
 
 class KeywordTest {
 

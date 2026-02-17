@@ -8,7 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.matchjob.core.ports.outgoing.TokenService;
+import com.matchjob.application.port.outgoing.TokenService;
 
 import javax.crypto.SecretKey;
 import jakarta.annotation.PostConstruct;

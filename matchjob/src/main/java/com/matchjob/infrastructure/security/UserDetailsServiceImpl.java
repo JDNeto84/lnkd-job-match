@@ -8,16 +8,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.matchjob.infrastructure.persistence.user.UserJpaRepository;
+import com.matchjob.infrastructure.persistence.user.SpringDataUserRepository;
 
 import java.util.List;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserJpaRepository userRepository;
+    private final SpringDataUserRepository userRepository;
 
-    public UserDetailsServiceImpl(UserJpaRepository userRepository) {
+    public UserDetailsServiceImpl(SpringDataUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

@@ -7,8 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.matchjob.core.domain.exception.WeakPasswordException;
-import com.matchjob.core.ports.outgoing.PasswordEncoder;
+import com.matchjob.application.port.outgoing.PasswordEncoder;
+import com.matchjob.domain.exception.WeakPasswordException;
+import com.matchjob.domain.valueobject.Password;
 
 class PasswordTest {
 

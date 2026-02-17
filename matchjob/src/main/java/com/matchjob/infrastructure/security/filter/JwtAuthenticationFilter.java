@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.matchjob.core.ports.outgoing.TokenService;
+import com.matchjob.application.port.outgoing.TokenService;
 
 import java.io.IOException;
 import java.util.List;

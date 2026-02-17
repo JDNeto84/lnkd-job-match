@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import com.matchjob.core.domain.exception.InvalidNameException;
+import com.matchjob.domain.exception.InvalidNameException;
+import com.matchjob.domain.valueobject.Name;
 
 class NameTest {
 

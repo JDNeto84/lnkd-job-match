@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import com.matchjob.core.domain.exception.InvalidEmailException;
+import com.matchjob.domain.exception.InvalidEmailException;
+import com.matchjob.domain.valueobject.Email;
 
 class EmailTest {
 

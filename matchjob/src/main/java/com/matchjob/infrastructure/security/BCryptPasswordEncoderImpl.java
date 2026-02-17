@@ -2,7 +2,7 @@ package com.matchjob.infrastructure.security;
 
 import org.springframework.stereotype.Service;
 
-import com.matchjob.core.ports.outgoing.PasswordEncoder;
+import com.matchjob.application.port.outgoing.PasswordEncoder;
 
 @Service
 public class BCryptPasswordEncoderImpl implements PasswordEncoder {

@@ -47,5 +47,4 @@ logging:
   level:
     root: ${LOG_LEVEL}
     org.hibernate.SQL: ${LOG_SQL}
-    org.hibernate.type.descriptor.sql: trace
     com.zaxxer.hikari: WARN

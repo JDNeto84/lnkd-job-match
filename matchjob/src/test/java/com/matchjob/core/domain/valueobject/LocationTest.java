@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import com.matchjob.core.domain.exception.InvalidLocationException;
+import com.matchjob.domain.exception.InvalidLocationException;
+import com.matchjob.domain.valueobject.Location;
 
 class LocationTest {
 
